@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://deven.io/sitemap.xml
