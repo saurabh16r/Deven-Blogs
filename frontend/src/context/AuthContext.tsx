@@ -114,8 +114,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         avatar: mockAvatar,
         streakCount: mockRole === 'superadmin' ? 12 : 3,
         referredCount: mockRole === 'superadmin' ? 4 : 0,
-        completedOnboarding: mockRole === 'superadmin',
-        onboardingCompleted: mockRole === 'superadmin'
+        completedOnboarding: true,
+        onboardingCompleted: true
       };
 
       const mockToken = `mock-token-${mockUser.id}`;
