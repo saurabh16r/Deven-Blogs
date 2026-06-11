@@ -2,6 +2,8 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { requireAuth } from '../middlewares/auth';
+import Media from '../models/Media';
+import { getMockMedia, addMockMedia, deleteMockMedia } from '../config/mockData';
 
 const router = Router();
 
@@ -31,54 +33,104 @@ router.post('/upload', requireAuth, upload.single('file'), async (req: any, res:
       return;
     }
 
+    let uploadUrl = '';
+    let uploadPublicId = '';
+
     if (!isCloudinaryConfigured) {
       console.log('⚠️ Cloudinary keys not found. Returning a simulated image URL.');
-      // Return a nice unsplash mock image URL depending on request or generic
       const mockImages = [
-        'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1531535934027-667f6787eda4?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
       ];
       const randomIndex = Math.floor(Math.random() * mockImages.length);
-      
-      res.json({
-        url: mockImages[randomIndex],
-        publicId: `mock-public-id-${Date.now()}`,
-        fileName: req.file.originalname,
-        fileType: req.file.mimetype,
-        size: req.file.size,
+      uploadUrl = mockImages[randomIndex];
+      uploadPublicId = `mock-public-id-${Date.now()}`;
+    } else {
+      // Convert buffer to base64 data URI
+      const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      const result = await cloudinary.uploader.upload(fileBase64, {
+        folder: 'deven_blogs',
       });
-      return;
+      uploadUrl = result.secure_url;
+      uploadPublicId = result.public_id;
     }
 
-    // Convert buffer to base64 data URI
-    const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    const result = await cloudinary.uploader.upload(fileBase64, {
-      folder: 'deven_blogs',
-    });
-
-    res.json({
-      url: result.secure_url,
-      publicId: result.public_id,
+    const newMediaData = {
+      url: uploadUrl,
+      publicId: uploadPublicId,
       fileName: req.file.originalname,
       fileType: req.file.mimetype,
       size: req.file.size,
-    });
+    };
+
+    if (process.env.MOCK_MODE === 'true') {
+      const mockItem = {
+        id: `media-${Date.now()}`,
+        ...newMediaData,
+        createdAt: new Date().toISOString(),
+      };
+      addMockMedia(mockItem);
+      res.json(mockItem);
+      return;
+    }
+
+    // Real DB Mode
+    const media = await Media.create(newMediaData);
+    res.json(media);
   } catch (error) {
     res.status(500).json({ message: 'Media upload failed', error: (error as Error).message });
   }
 });
 
-// GET MEDIA LIBRARY (MOCK)
+// GET MEDIA LIBRARY
 router.get('/library', requireAuth, async (req, res) => {
-  const library = [
-    { id: '1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80', name: 'Design Abstract' },
-    { id: '2', url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=300&q=80', name: 'TS Coding' },
-    { id: '3', url: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=300&q=80', name: 'AI Glowing Neural' },
-    { id: '4', url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300&q=80', name: 'Hardware Setup' },
-  ];
-  res.json(library);
+  try {
+    if (process.env.MOCK_MODE === 'true') {
+      res.json(getMockMedia());
+      return;
+    }
+    const media = await Media.find().sort({ createdAt: -1 });
+    res.json(media);
+  } catch (error) {
+    res.status(500).json({ message: 'Error loading media library', error: (error as Error).message });
+  }
+});
+
+// DELETE MEDIA ITEM
+router.delete('/:id', requireAuth, async (req, res): Promise<void> => {
+  const { id } = req.params;
+  try {
+    if (process.env.MOCK_MODE === 'true') {
+      deleteMockMedia(id);
+      res.json({ message: 'Media deleted successfully' });
+      return;
+    }
+
+    // DB Mode
+    const media = await Media.findById(id);
+    if (!media) {
+      res.status(404).json({ message: 'Media not found' });
+      return;
+    }
+
+    // Delete from Cloudinary if configured
+    if (isCloudinaryConfigured && media.publicId && !media.publicId.startsWith('mock-')) {
+      try {
+        await cloudinary.uploader.destroy(media.publicId);
+      } catch (err) {
+        console.error('Error deleting from Cloudinary:', err);
+      }
+    }
+
+    await Media.findByIdAndDelete(id);
+    res.json({ message: 'Media deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting media', error: (error as Error).message });
+  }
 });
 
 export default router;

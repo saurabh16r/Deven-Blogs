@@ -15,6 +15,12 @@ export interface IFaq {
 export interface IWebsiteSettings extends Document {
   heroTitle: string;
   heroSubheadline: string;
+  heroImage: string;
+  primaryCtaText: string;
+  primaryCtaLink: string;
+  secondaryCtaText: string;
+  secondaryCtaLink: string;
+  trustIndicators: string[];
   logoText: string;
   logoColor: string;
   testimonials: ITestimonial[];
@@ -33,6 +39,18 @@ const WebsiteSettingsSchema: Schema = new Schema(
     heroSubheadline: {
       type: String,
       default: 'Premium blogs, AI summaries, and expert insights designed for modern learners.',
+    },
+    heroImage: {
+      type: String,
+      default: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80',
+    },
+    primaryCtaText: { type: String, default: 'Start Building' },
+    primaryCtaLink: { type: String, default: '/blogs' },
+    secondaryCtaText: { type: String, default: 'Explore Founder Resources' },
+    secondaryCtaLink: { type: String, default: '#resources' },
+    trustIndicators: {
+      type: [String],
+      default: ['Startup Resources', 'Founder Community', 'AI Learning Tools', 'Execution-Focused Content'],
     },
     logoText: { type: String, default: 'Deven' },
     logoColor: { type: String, default: '#FFC247' },
@@ -60,3 +78,4 @@ const WebsiteSettingsSchema: Schema = new Schema(
 
 export default mongoose.models.WebsiteSettings ||
   mongoose.model<IWebsiteSettings>('WebsiteSettings', WebsiteSettingsSchema);
+

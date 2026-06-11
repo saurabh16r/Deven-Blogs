@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   BarChart2, HelpCircle, Palette, CreditCard, Users, ArrowLeft, ShieldAlert,
-  SlidersHorizontal, Sparkles
+  SlidersHorizontal, Sparkles, Image
 } from 'lucide-react';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
@@ -53,6 +53,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   const superLinks = [
     { name: 'Analytics Board', href: '/superadmin', icon: BarChart2 },
     { name: 'Homepage Builder', href: '/superadmin/cms', icon: SlidersHorizontal },
+    { name: 'Hero Settings', href: '/superadmin/hero', icon: Sparkles },
+    { name: 'Media Library', href: '/superadmin/media', icon: Image },
     { name: 'Branding Panel', href: '/superadmin/branding', icon: Palette },
     { name: 'Pricing & Coupons', href: '/superadmin/pricing', icon: CreditCard },
     { name: 'User Management', href: '/superadmin/users', icon: Users },

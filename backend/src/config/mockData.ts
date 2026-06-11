@@ -373,8 +373,14 @@ export let mockCoupons: MockCoupon[] = [
 ];
 
 export let mockWebsiteSettings = {
-  heroTitle: 'Build Smarter. Scale Faster.',
-  heroSubheadline: 'The ultimate knowledge platform and AI-powered co-pilot for startup founders, builders, and creators.',
+  heroTitle: 'Build Startups, Not Just Ideas.',
+  heroSubheadline: 'Deven is a startup ecosystem helping founders, freelancers, students, and builders turn ideas into real businesses through expert content, mentorship, community, and execution-focused learning.',
+  heroImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80',
+  primaryCtaText: 'Start Building',
+  primaryCtaLink: '/blogs',
+  secondaryCtaText: 'Explore Founder Resources',
+  secondaryCtaLink: '#resources',
+  trustIndicators: ['Startup Resources', 'Founder Community', 'AI Learning Tools', 'Execution-Focused Content'],
   logoText: 'Deven Blogs',
   logoColor: '#FFC247',
   testimonials: [
@@ -400,6 +406,32 @@ export let mockWebsiteSettings = {
   contactEmail: 'support@deven.io',
   contactPhone: '+91 98765 43210',
   contactAddress: 'Mumbai, Maharashtra, India',
+};
+
+export interface MockMedia {
+  id: string;
+  url: string;
+  publicId: string;
+  fileName: string;
+  fileType: string;
+  size: number;
+  createdAt: string;
+}
+
+export let mockMedia: MockMedia[] = [
+  { id: 'media-1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', publicId: 'mock-1', fileName: 'Design Abstract.jpg', fileType: 'image/jpeg', size: 104857, createdAt: new Date().toISOString() },
+  { id: 'media-2', url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80', publicId: 'mock-2', fileName: 'TS Coding.jpg', fileType: 'image/jpeg', size: 204857, createdAt: new Date().toISOString() },
+  { id: 'media-3', url: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80', publicId: 'mock-3', fileName: 'AI Glowing Neural.jpg', fileType: 'image/jpeg', size: 304857, createdAt: new Date().toISOString() },
+  { id: 'media-4', url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80', publicId: 'mock-4', fileName: 'Hardware Setup.jpg', fileType: 'image/jpeg', size: 404857, createdAt: new Date().toISOString() },
+];
+
+export const getMockMedia = () => mockMedia;
+export const addMockMedia = (item: MockMedia) => {
+  mockMedia.push(item);
+  return item;
+};
+export const deleteMockMedia = (id: string) => {
+  mockMedia = mockMedia.filter(m => m.id !== id);
 };
 
 // Functions to modify and retrieve mock state

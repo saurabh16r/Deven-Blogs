@@ -297,8 +297,14 @@ export const seedDatabase = async () => {
 
     // 8. Create Website Settings
     await WebsiteSettings.create({
-      heroTitle: 'Build Smarter. Scale Faster.',
-      heroSubheadline: 'The ultimate knowledge platform and AI-powered co-pilot for startup founders, builders, and creators.',
+      heroTitle: 'Build Startups, Not Just Ideas.',
+      heroSubheadline: 'Deven is a startup ecosystem helping founders, freelancers, students, and builders turn ideas into real businesses through expert content, mentorship, community, and execution-focused learning.',
+      heroImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80',
+      primaryCtaText: 'Start Building',
+      primaryCtaLink: '/blogs',
+      secondaryCtaText: 'Explore Founder Resources',
+      secondaryCtaLink: '#resources',
+      trustIndicators: ['Startup Resources', 'Founder Community', 'AI Learning Tools', 'Execution-Focused Content'],
       logoText: 'Deven Blogs',
       logoColor: '#FFC247',
       testimonials: [

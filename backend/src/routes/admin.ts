@@ -15,6 +15,24 @@ import {
 
 const router = Router();
 
+// GET PUBLIC SETTINGS (Unauthenticated)
+router.get('/public-settings', async (req, res) => {
+  try {
+    if (process.env.MOCK_MODE === 'true') {
+      res.json(mockWebsiteSettings);
+      return;
+    }
+
+    let settings = await WebsiteSettings.findOne();
+    if (!settings) {
+      settings = await WebsiteSettings.create({});
+    }
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error loading settings', error: (error as Error).message });
+  }
+});
+
 // Protect all admin endpoints with authentication & minimum "admin" role
 router.use(requireAuth, requireRoles(['admin', 'superadmin']));
 

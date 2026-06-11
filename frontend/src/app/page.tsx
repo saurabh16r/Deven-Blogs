@@ -12,9 +12,26 @@ import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+const floatingCards = [
+  { icon: '🚀', title: '10,000+ Builders', desc: 'Learning & Building', delay: 0, yOffset: [0, -10, 0] },
+  { icon: '📚', title: 'Founder Resources', desc: 'Premium Playbooks', delay: 0.8, yOffset: [0, 10, 0] },
+  { icon: '🤝', title: 'Active Community', desc: 'Startup Connections', delay: 0.4, yOffset: [0, -8, 0] },
+  { icon: '⚡', title: 'AI-Powered Tools', desc: 'Accelerated Learning', delay: 1.2, yOffset: [0, 8, 0] },
+];
+
 export default function Home() {
   const [blogs, setBlogs] = useState<ClientBlog[]>([]);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [settings, setSettings] = useState<any>({
+    heroTitle: 'Build Startups, [Not Just Ideas.]',
+    heroSubheadline: 'Deven is a startup ecosystem helping founders, freelancers, students, and builders turn ideas into real businesses through expert content, mentorship, community, and execution-focused learning.',
+    heroImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80',
+    primaryCtaText: 'Start Building',
+    primaryCtaLink: '/blogs',
+    secondaryCtaText: 'Explore Founder Resources',
+    secondaryCtaLink: '#resources',
+    trustIndicators: ['Startup Resources', 'Founder Community', 'AI Learning Tools', 'Execution-Focused Content'],
+  });
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -29,8 +46,36 @@ export default function Home() {
     fetchBlogs();
   }, []);
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/admin/public-settings`);
+        if (res.data) {
+          setSettings(res.data);
+        }
+      } catch (err) {
+        console.log('Backend settings connection failed. Using static fallbacks.');
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const toggleFaq = (index: number) => {
     setActiveFaq(activeFaq === index ? null : index);
+  };
+
+  const getRenderedHeadline = (title: string) => {
+    const regex = /\[(.*?)\]/g;
+    if (regex.test(title)) {
+      return title.replace(regex, '<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FFC247] via-amber-300 to-[#FFC247]">$1</span>');
+    }
+    const parts = title.split(',');
+    if (parts.length > 1) {
+      const last = parts[parts.length - 1];
+      const rest = parts.slice(0, parts.length - 1).join(',');
+      return `${rest}, <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FFC247] via-amber-300 to-[#FFC247]">${last}</span>`;
+    }
+    return title;
   };
 
   const categories = [
@@ -49,69 +94,89 @@ export default function Home() {
 
       <Header />
 
-      {/* HERO SECTION */}
-      <section className="relative pt-12 pb-20 md:py-32 px-4 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <div className="space-y-6 text-left max-w-xl">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/5 bg-zinc-900/50 backdrop-blur-md text-xs font-semibold text-[#FFC247]"
-          >
-            <Sparkles className="w-4 h-4 text-[#FFC247]" />
-            Exclusive Founder Knowledge Platform
-          </motion.div>
+      {/* HERO SECTION WRAPPER WITH BACKGROUND IMAGE */}
+      <div 
+        className="w-full relative overflow-hidden bg-cover bg-center border-b border-white/5 min-h-[600px] flex items-center"
+        style={{ 
+          backgroundImage: settings.heroImage ? `url(${settings.heroImage})` : 'none',
+        }}
+      >
+        {/* Dark overlay with reduced opacity (25%-35%) to make the startup image clearly visible */}
+        <div className="absolute inset-0 bg-zinc-950/30 z-0" />
+        
+        {/* Left-to-right gradient overlay for text readability, fading to transparent on the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/95 to-zinc-950/40 lg:to-transparent z-0 pointer-events-none" />
 
-          <motion.h1
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-outfit tracking-tight leading-none text-white"
-          >
-            Build Smarter.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFC247] via-amber-300 to-[#FFC247]">
-              Scale Faster.
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg text-zinc-400 leading-relaxed font-sans"
-          >
-            The ultimate knowledge platform and AI-powered co-pilot for startup founders, builders, and creators. Turn strategies into execution in minutes.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap gap-4 pt-2"
-          >
-            <Link
-              href="/blogs"
-              className="glow-button px-6 py-3 rounded-full flex items-center gap-2 group text-sm font-semibold"
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 md:py-32 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Side Content (40-50% split-screen / col-span-6) */}
+          <div className="lg:col-span-6 space-y-6 text-left w-full max-w-2xl">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/5 bg-zinc-900/50 backdrop-blur-md text-xs font-semibold text-[#FFC247]"
             >
-              Start Building
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-6 py-3 rounded-full border border-white/10 hover:border-white/20 bg-zinc-900/40 backdrop-blur-md transition-all text-sm font-semibold hover:bg-zinc-900/70"
+              <Sparkles className="w-4 h-4 text-[#FFC247]" />
+              Exclusive Founder Knowledge Platform
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-outfit tracking-tight leading-none text-white max-w-2xl"
+              dangerouslySetInnerHTML={{ __html: getRenderedHeadline(settings.heroTitle) }}
+            />
+
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-lg text-zinc-300 leading-relaxed font-sans max-w-xl"
             >
-              Explore Plans
-            </Link>
-          </motion.div>
+              {settings.heroSubheadline}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap gap-4 pt-2"
+            >
+              <Link
+                href={settings.primaryCtaLink}
+                className="glow-button px-8 py-3.5 rounded-full flex items-center gap-2 group text-sm font-bold shadow-[0_0_20px_rgba(255,194,71,0.15)] hover:shadow-[0_0_30px_rgba(255,194,71,0.4)] transition-all hover:scale-105 active:scale-95 text-black bg-[#FFC247]"
+              >
+                {settings.primaryCtaText}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href={settings.secondaryCtaLink}
+                className="px-8 py-3.5 rounded-full border border-white/10 hover:border-[#FFC247]/30 bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all text-sm font-bold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 text-zinc-100"
+              >
+                {settings.secondaryCtaText}
+              </Link>
+            </motion.div>
+
+            {/* Trust Indicators below buttons */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="pt-6 border-t border-white/5 flex flex-wrap gap-x-6 gap-y-3"
+            >
+              {settings.trustIndicators && settings.trustIndicators.map((indicator: string, index: number) => (
+                <div key={index} className="flex items-center gap-2 text-xs text-zinc-300 font-semibold font-sans">
+                  <CheckCircle className="w-4 h-4 text-[#FFC247] shrink-0" />
+                  <span>{indicator}</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Right Side (50-60% split-screen / col-span-6) - No cards/widgets, visual background only */}
+          <div className="hidden lg:block lg:col-span-6 h-full min-h-[350px]" />
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <HeroIllustration />
-        </motion.div>
-      </section>
+      </div>
 
       {/* WHY DEVEN SECTION */}
       <section className="py-20 border-t border-white/5 relative bg-zinc-950">
